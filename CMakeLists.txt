@@ -207,9 +207,6 @@ if(ENABLE_MIMALLOC)
     elseif(CMAKE_SIZEOF_VOID_P LESS 8)
         message(WARNING "Mimalloc disabled: Only supported on 64-bit platforms.")
         set(ENABLE_MIMALLOC OFF CACHE BOOL "Enable mimalloc allocator" FORCE)
-    elseif(OS_FREEBSD OR OS_MACOS OR OS_WINDOWS)
-        message(WARNING "Mimalloc disabled: Not supported on FreeBSD, macOS, or Windows.")
-        set(ENABLE_MIMALLOC OFF CACHE BOOL "Enable mimalloc allocator" FORCE)
     elseif(ENABLE_ADDRESS_SANITIZER)
         message(WARNING "Mimalloc disabled: Cannot be used with Address Sanitizer.")
         set(ENABLE_MIMALLOC OFF CACHE BOOL "Enable mimalloc allocator" FORCE)
@@ -683,7 +680,7 @@ check_c_source_compiles("
     }
 " HAVE_RAND_S)
 
-if(OS_FREEBSD OR OS_MACOS)
+if(OS_FREEBSD)
         set(HAVE_BUILTIN_ATOMICS True)
 endif()
 
@@ -691,30 +688,7 @@ endif()
 pkg_check_modules(TLS IMPORTED_TARGET openssl)
 
 if(NOT TARGET PkgConfig::TLS)
-        if(OS_MACOS)
-                execute_process(COMMAND
-                                brew --prefix --installed openssl
-                                RESULT_VARIABLE BREW_OPENSSL
-                                OUTPUT_VARIABLE BREW_OPENSSL_PREFIX
-                                OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-                if((BREW_OPENSSL NOT EQUAL 0) OR (NOT EXISTS "${BREW_OPENSSL_PREFIX}"))
-                        message(FATAL_ERROR "OpenSSL (or LibreSSL) is required for building Netdata, but could not be found.")
-                endif()
-
-                add_library(PkgConfig::CRYPTO IMPORTED)
-                set_target_properties(PkgConfig::CRYPTO
-                        IMPORTED_LOCATION ${BREW_OPENSSL_PREFIX}/lib/libcrypto.dylib
-                        INTERFACE_INCLUDE_DIRECTORIES ${BREW_OPENSSL_PREFIX}/include)
-
-                add_library(PkgConfig::TLS IMPORTED)
-                set_target_properties(PkgConfig::TLS
-                        IMPORTED_LOCATION ${BREW_OPENSSL_PREFIX}/lib/libssl.dylib
-                        INTERFACE_LINK_LIBRARIES PkgConfig::CRYPTO
-                        INTERFACE_INCLUDE_DIRECTORIES ${BREW_OPENSSL_PREFIX}/include)
-        else()
-            message(FATAL_ERROR "OpenSSL (or LibreSSL) is required for building Netdata, but could not be found.")
-        endif()
+        message(FATAL_ERROR "OpenSSL (or LibreSSL) is required for building Netdata, but could not be found.")
 else()
         pkg_check_modules(CRYPTO IMPORTED_TARGET REQUIRED libcrypto)
 endif()
@@ -1092,32 +1066,21 @@ set(LIBNETDATA_FILES
         src/libnetdata/signals/signal-code.h
 )
 
-if(OS_WINDOWS)
-    set(LIBNETDATA_WIN_FILES
-            src/libnetdata/os/windows-api/windows_api.c
-            src/libnetdata/os/windows-api/windows_api.h
-    )
+set(LIBNETDATA_STACKTRACE_FILES
+src/libnetdata/stacktrace/stacktrace.h
+src/libnetdata/stacktrace/stacktrace-common.h
+src/libnetdata/stacktrace/stacktrace-common.c
+src/libnetdata/stacktrace/stacktrace-array.h
+src/libnetdata/stacktrace/stacktrace-array.c
+src/libnetdata/stacktrace/stacktrace-libbacktrace.c
+src/libnetdata/stacktrace/stacktrace-libunwind.c
+src/libnetdata/stacktrace/stacktrace-backtrace.c
+src/libnetdata/stacktrace/stacktrace-none.c
+src/libnetdata/stacktrace/stacktrace-log.c
+src/libnetdata/stacktrace/stacktrace-unittest.c
+)
 
-    list(APPEND LIBNETDATA_FILES ${LIBNETDATA_WIN_FILES})
-endif()
-
-if(NOT OS_FREEBSD)
-    set(LIBNETDATA_STACKTRACE_FILES
-        src/libnetdata/stacktrace/stacktrace.h
-        src/libnetdata/stacktrace/stacktrace-common.h
-        src/libnetdata/stacktrace/stacktrace-common.c
-        src/libnetdata/stacktrace/stacktrace-array.h
-        src/libnetdata/stacktrace/stacktrace-array.c
-        src/libnetdata/stacktrace/stacktrace-libbacktrace.c
-        src/libnetdata/stacktrace/stacktrace-libunwind.c
-        src/libnetdata/stacktrace/stacktrace-backtrace.c
-        src/libnetdata/stacktrace/stacktrace-none.c
-        src/libnetdata/stacktrace/stacktrace-log.c
-        src/libnetdata/stacktrace/stacktrace-unittest.c
-    )
-
-    list(APPEND LIBNETDATA_FILES ${LIBNETDATA_STACKTRACE_FILES})
-endif()
+list(APPEND LIBNETDATA_FILES ${LIBNETDATA_STACKTRACE_FILES})
 
 list(APPEND LIBNETDATA_FILES ${INICFG_FILES})
 list(APPEND LIBNETDATA_FILES ${CONFIG_FILES})
@@ -2032,43 +1995,21 @@ set(NETDATA_FILES
         ${PROFILE_PLUGIN_FILES}
 )
 
-if(OS_LINUX)
-        list(APPEND NETDATA_FILES
-                src/daemon/static_threads_linux.c
-                ${CGROUPS_PLUGIN_FILES}
-                ${DISKSPACE_PLUGIN_FILES}
-                ${PROC_PLUGIN_FILES}
-                ${TC_PLUGIN_FILES}
-                ${TIMEX_PLUGIN_FILES}
-                ${INTERNAL_COLLECTORS_FILES}
-        )
+#only linux
+list(APPEND NETDATA_FILES
+        src/daemon/static_threads_linux.c
+        ${CGROUPS_PLUGIN_FILES}
+        ${DISKSPACE_PLUGIN_FILES}
+        ${PROC_PLUGIN_FILES}
+        ${TC_PLUGIN_FILES}
+        ${TIMEX_PLUGIN_FILES}
+        ${INTERNAL_COLLECTORS_FILES}
+)
 
-        if(ENABLE_SENTRY)
-            list(APPEND NETDATA_FILES
-                    src/daemon/sentry-native/sentry-native.c
-                    src/daemon/sentry-native/sentry-native.h)
-        endif()
-elseif(OS_MACOS)
+if(ENABLE_SENTRY)
         list(APPEND NETDATA_FILES
-                src/daemon/static_threads_macos.c
-                ${MACOS_PLUGIN_FILES}
-                ${TIMEX_PLUGIN_FILES}
-                ${INTERNAL_COLLECTORS_FILES}
-        )
-elseif(OS_FREEBSD)
-        list(APPEND NETDATA_FILES
-                src/daemon/static_threads_freebsd.c
-                ${FREEBSD_PLUGIN_FILES}
-                ${TIMEX_PLUGIN_FILES}
-                ${INTERNAL_COLLECTORS_FILES}
-        )
-elseif(OS_WINDOWS)
-        list(APPEND NETDATA_FILES
-                src/daemon/static_threads_windows.c
-                src/daemon/winsvc.cc
-                ${WINDOWS_PLUGIN_FILES}
-                ${INTERNAL_COLLECTORS_FILES}
-        )
+                src/daemon/sentry-native/sentry-native.c
+                src/daemon/sentry-native/sentry-native.h)
 endif()
 
 set(MQTT_WEBSOCKETS_FILES
@@ -2201,93 +2142,12 @@ target_include_directories(libnetdata BEFORE PUBLIC ${CONFIG_H_DIR} ${CMAKE_SOUR
 target_link_libraries(libnetdata PUBLIC
         "$<$<BOOL:${ENABLE_MIMALLOC}>:mimalloc-static>"
         "$<$<NOT:$<BOOL:${HAVE_BUILTIN_ATOMICS}>>:atomic>"
-        "$<$<OR:$<BOOL:${OS_LINUX}>,$<BOOL:${OS_FREEBSD}>>:pthread;rt>"
-        "$<$<BOOL:${OS_WINDOWS}>:kernel32;advapi32;winmm;rpcrt4;wevtapi;ole32;oleaut32;wbemuuid;sensorsapi;iphlpapi>"
+        "$<$<BOOL:${OS_LINUX}>:pthread;rt>"
         "$<$<BOOL:${LINK_LIBM}>:m>"
         "${SYSTEMD_LDFLAGS}")
 
 if(HAVE_LIBBACKTRACE)
     netdata_add_libbacktrace_to_target(libnetdata)
-endif()
-
-if(OS_WINDOWS)
-        set(HAVE_ETW True)
-        set(HAVE_WEL True)
-
-        # Output the results for debugging purposes
-        message(STATUS "Have Event Tracing for Windows (ETW): ${HAVE_ETW}")
-        message(STATUS "Have Windows Event Log (WEL): ${HAVE_WEL}")
-
-        if(HAVE_WEL OR HAVE_ETW)
-                # Define the source and generated file paths
-                set(WEVT_GEN_SRC_H_FILE "${CMAKE_SOURCE_DIR}/src/libnetdata/log/nd_log-to-windows-common.h")
-                set(WEVT_GEN_SRC_C_FILE "${CMAKE_SOURCE_DIR}/src/libnetdata/log/wevt_netdata_mc_generate.c")
-                set(WEVT_GEN_BIN_FILE "${CMAKE_BINARY_DIR}/wevt_netdata_mc_generate")
-
-                set(WEVT_BUILD_SCRIPT "${CMAKE_SOURCE_DIR}/src/libnetdata/log/wevt_netdata_compile.sh")
-
-                set(WEVT_MC_FILE "${CMAKE_BINARY_DIR}/wevt_netdata.mc")
-                set(WEVT_MAN_FILE "${CMAKE_BINARY_DIR}/wevt_netdata_manifest.xml")
-                set(WEVT_RC_FILE "${CMAKE_BINARY_DIR}/wevt_netdata.rc")
-                set(WEVT_MC_H_FILE "${CMAKE_BINARY_DIR}/wevt_netdata.h")
-                set(WEVT_MAN_H_FILE "${CMAKE_BINARY_DIR}/wevt_netdata_manifest.h")
-                set(WEVT_RES_OBJECT "${CMAKE_BINARY_DIR}/wevt_netdata_res.o")
-
-                set(WEVT_DLL_FILE "${CMAKE_BINARY_DIR}/wevt_netdata.dll")
-                set(WEVT_ETW_INSTALL_SCRIPT "${CMAKE_SOURCE_DIR}/src/libnetdata/log/wevt_netdata_install.bat")
-
-                # we compile ${WEVT_GEN_BIN_FILE}, which generates the manifest, the .mc,
-                # and the headers required for compiling libnetdata/logs
-
-                if(HAVE_ETW)
-                        # ETW method also supports WEL
-                        # but it requires Microsoft tools mc, rc, and link
-                        add_custom_command(
-                                OUTPUT "${WEVT_MC_H_FILE}" "${WEVT_MAN_H_FILE}" "${WEVT_DLL_FILE}"
-                                COMMAND "${CMAKE_C_COMPILER}" -o "${WEVT_GEN_BIN_FILE}" "${WEVT_GEN_SRC_C_FILE}"
-                                COMMAND "${WEVT_GEN_BIN_FILE}" >"${WEVT_MC_FILE}"
-                                COMMAND "${WEVT_GEN_BIN_FILE}" --manifest >"${WEVT_MAN_FILE}"
-                                COMMAND "${WEVT_BUILD_SCRIPT}" "${CMAKE_SOURCE_DIR}/src/libnetdata/log" "${CMAKE_BINARY_DIR}"
-                                DEPENDS "${WEVT_GEN_SRC_C_FILE}" "${WEVT_GEN_SRC_H_FILE}"
-                                COMMENT "Compiling ${WEVT_MC_FILE} to generate ${WEVT_MC_H_FILE} and ${WEVT_DLL_FILE}"
-                        )
-                else()
-                        # WEL method can be built with windmc, windres and the normal linker
-                        add_custom_command(
-                                OUTPUT "${WEVT_MC_H_FILE}" "${WEVT_DLL_FILE}"
-                                COMMAND "${CMAKE_C_COMPILER}" -o "${WEVT_GEN_BIN_FILE}" "${WEVT_GEN_SRC_C_FILE}"
-                                COMMAND "${WEVT_GEN_BIN_FILE}" >"${WEVT_MC_FILE}"
-                                COMMAND "${WEVT_GEN_BIN_FILE}" --manifest >"${WEVT_MAN_FILE}"
-                                COMMAND windmc -r "${CMAKE_BINARY_DIR}" -h "${CMAKE_BINARY_DIR}" ${WEVT_MC_FILE}
-                                COMMAND echo "1 2004" "wevt_netdata_manifest.xml" >> "${WEVT_RC_FILE}"
-                                COMMAND windres ${WEVT_RC_FILE} -o ${WEVT_RES_OBJECT}
-                                COMMAND ${CMAKE_LINKER} -dll --entry 0 -nostdlib -o ${WEVT_DLL_FILE} ${WEVT_RES_OBJECT}
-                                DEPENDS "${WEVT_GEN_SRC_C_FILE}" "${WEVT_GEN_SRC_H_FILE}"
-                                COMMENT "Compiling ${WEVT_MC_FILE} to generate ${WEVT_MC_H_FILE} and ${WEVT_DLL_FILE}"
-                        )
-                endif()
-
-                # Create a custom target for the DLL
-                add_custom_target(wevt_netdata ALL DEPENDS ${WEVT_DLL_FILE})
-
-                set_source_files_properties(src/libnetdata/log/nd_log-to-windows-events.c PROPERTIES
-                        OBJECT_DEPENDS "${WEVT_MC_H_FILE}")
-
-                if(HAVE_ETW)
-                        set_source_files_properties(src/libnetdata/log/nd_log-to-windows-events.c PROPERTIES
-                                OBJECT_DEPENDS "${WEVT_MAN_H_FILE}")
-
-                        install(FILES "${WEVT_DLL_FILE}" "${WEVT_MAN_FILE}" "${WEVT_ETW_INSTALL_SCRIPT}"
-                                COMPONENT wevt_netdata_dll
-                                DESTINATION "${BINDIR}")
-                else()
-                        # do not install the manifest in this case
-                        # the nsi installer will skip registering the ETW publisher
-                        install(FILES "${WEVT_DLL_FILE}"
-                                COMPONENT wevt_netdata_dll
-                                DESTINATION "${BINDIR}")
-                endif()
-        endif()
 endif()
 
 # judy
@@ -2338,16 +2198,10 @@ if(ENABLE_LIBUNWIND)
 endif()
 
 # zlib
-if(OS_MACOS)
-        find_package(ZLIB REQUIRED)
-        target_include_directories(libnetdata BEFORE PUBLIC ${ZLIB_INCLUDE_DIRS})
-        target_link_libraries(libnetdata PUBLIC ZLIB::ZLIB)
-else()
-        pkg_check_modules(ZLIB REQUIRED zlib)
-        target_include_directories(libnetdata BEFORE PUBLIC ${ZLIB_INCLUDE_DIRS})
-        target_compile_options(libnetdata PUBLIC ${ZLIB_CFLAGS_OTHER})
-        target_link_libraries(libnetdata PUBLIC ${ZLIB_LDFLAGS})
-endif()
+pkg_check_modules(ZLIB REQUIRED zlib)
+target_include_directories(libnetdata BEFORE PUBLIC ${ZLIB_INCLUDE_DIRS})
+target_compile_options(libnetdata PUBLIC ${ZLIB_CFLAGS_OTHER})
+target_link_libraries(libnetdata PUBLIC ${ZLIB_LDFLAGS})
 
 # lz4 - try to find a version that is compatible with streaming compression
 # otherwise pick whichever one we can find to support dbengine but don't set
@@ -2382,15 +2236,11 @@ if(LIBBROTLI_FOUND)
 endif()
 
 # uuid
-if(OS_MACOS OR OS_WINDOWS)
-        # UUID functionality is part of the system libraries here, so no extra
-        # stuff needed.
-else()
-        pkg_check_modules(UUID REQUIRED uuid)
-        target_include_directories(libnetdata BEFORE PUBLIC ${UUID_INCLUDE_DIRS})
-        target_compile_options(libnetdata PUBLIC ${UUID_CFLAGS_OTHER})
-        target_link_libraries(libnetdata PUBLIC ${UUID_LDFLAGS})
-endif()
+pkg_check_modules(UUID REQUIRED uuid)
+target_include_directories(libnetdata BEFORE PUBLIC ${UUID_INCLUDE_DIRS})
+target_compile_options(libnetdata PUBLIC ${UUID_CFLAGS_OTHER})
+target_link_libraries(libnetdata PUBLIC ${UUID_LDFLAGS})
+
 
 # uv
 pkg_check_modules(LIBUV REQUIRED libuv)
@@ -2405,11 +2255,9 @@ target_link_libraries(libnetdata PUBLIC PkgConfig::CRYPTO)
 target_link_libraries(libnetdata PUBLIC PkgConfig::TLS)
 
 # mnl
-if(NOT OS_MACOS)
-    pkg_check_modules(MNL libmnl)
-    if(MNL_FOUND)
-        set(HAVE_LIBMNL True)
-    endif()
+pkg_check_modules(MNL libmnl)
+if(MNL_FOUND)
+set(HAVE_LIBMNL True)
 endif()
 
 #
@@ -2534,18 +2382,13 @@ if(ENABLE_PLUGIN_APPS)
             src/collectors/apps.plugin/apps_pid.c
             src/collectors/apps.plugin/apps_aggregations.c
             src/collectors/apps.plugin/apps_os_linux.c
-            src/collectors/apps.plugin/apps_os_freebsd.c
-            src/collectors/apps.plugin/apps_os_macos.c
-            src/collectors/apps.plugin/apps_os_windows.c
             src/collectors/apps.plugin/apps_incremental_collection.c
-            src/collectors/apps.plugin/apps_os_windows_nt.c
             src/collectors/apps.plugin/apps_pid_match.c
     )
 
     add_executable(apps.plugin ${APPS_PLUGIN_FILES})
 
-    target_link_libraries(apps.plugin libnetdata ${CAP_LIBRARIES}
-            "$<$<BOOL:${OS_WINDOWS}>:Version;ntdll>")
+    target_link_libraries(apps.plugin libnetdata ${CAP_LIBRARIES})
 
     target_include_directories(apps.plugin PRIVATE ${CAP_INCLUDE_DIRS})
     target_compile_options(apps.plugin PRIVATE ${CAP_CFLAGS_OTHER})
@@ -2791,15 +2634,6 @@ if(ENABLE_PLUGIN_SYSTEMD_UNITS)
         endif()
 endif()
 
-if(OS_WINDOWS)
-        add_executable(windows-events.plugin ${WINDOWS_EVENTS_PLUGIN_FILES})
-        target_link_libraries(windows-events.plugin libnetdata wevtapi)
-
-        install(TARGETS windows-events.plugin
-                COMPONENT plugin-windows-events
-                DESTINATION usr/libexec/netdata/plugins.d)
-endif()
-
 if(ENABLE_PLUGIN_EBPF)
     set(EBPF_PLUGIN_FILES
             src/collectors/ebpf.plugin/ebpf.c
@@ -2991,68 +2825,15 @@ endif()
 # build netdata (only Linux ATM)
 #
 
-if(OS_WINDOWS)
-        set(NETDATA_CLAIM_RES_FILES "packaging/windows/resources/netdata_claim.rc")
-        configure_file(packaging/windows/resources/netdata_claim.manifest.in ${CMAKE_SOURCE_DIR}/packaging/windows/resources/netdata_claim.manifest @ONLY)
-
-        set(NETDATACLI_RES_FILES "packaging/windows/resources/netdatacli.rc")
-        configure_file(packaging/windows/resources/netdatacli.manifest.in ${CMAKE_SOURCE_DIR}/packaging/windows/resources/netdatacli.manifest @ONLY)
-
-        set(NETDATA_RES_FILES "packaging/windows/resources/netdata.rc")
-        configure_file(packaging/windows/resources/netdata.manifest.in ${CMAKE_SOURCE_DIR}/packaging/windows/resources/netdata.manifest @ONLY)
-
-        configure_file(packaging/windows/netdata.wxs.in netdata.wxs @ONLY)
-        configure_file(packaging/windows/NetdataWhite.ico NetdataWhite.ico COPYONLY)
-        configure_file(packaging/windows/eula.rtf eula.rtf COPYONLY)
-        configure_file(packaging/windows/Top.bmp Top.bmp COPYONLY)
-        configure_file(packaging/windows/BackGround.bmp BackGround.bmp COPYONLY)
-endif()
-
 add_executable(netdata
         ${NETDATA_FILES}
         "${ACLK_FILES}"
         "$<$<BOOL:${ENABLE_EXPORTER_MONGODB}>:${MONGODB_EXPORTING_FILES}>"
         "$<$<BOOL:${ENABLE_EXPORTER_PROMETHEUS_REMOTE_WRITE}>:${PROMETHEUS_REMOTE_WRITE_EXPORTING_FILES}>"
-        "$<$<BOOL:${OS_WINDOWS}>:${NETDATA_RES_FILES}>"
 )
 
 if(ENABLE_ML)
   netdata_add_dlib_to_target(netdata)
-endif()
-
-if(OS_WINDOWS)
-        add_executable(NetdataClaim ${CLAIM_WINDOWS_FILES} ${NETDATA_CLAIM_RES_FILES})
-        target_link_libraries(NetdataClaim shell32 gdi32 msftedit)
-        target_compile_options(NetdataClaim PUBLIC -mwindows)
-
-        set(NETDATA_DRIVER_FILE "${CMAKE_BINARY_DIR}/netdata_driver.sys")
-
-        add_library(netdata_driver SHARED ${WINDOWS_PLUGIN_DRIVER})
-        set_target_properties(netdata_driver PROPERTIES LIBRARY_OUTPUT_NAME "netdata_driver")
-        set_target_properties(netdata_driver PROPERTIES PREFIX "")
-        set_target_properties(netdata_driver PROPERTIES SUFFIX ".sys")
-        target_include_directories(netdata_driver PRIVATE BEFORE "/mingw64/include/ddk" "${CMAKE_SOURCE_DIR}/src/collectors/windows.plugin")
-        target_compile_options(netdata_driver PRIVATE
-                -Wall
-                -Wextra
-                -Werror
-                -ffreestanding
-                -fno-exceptions
-                -fno-stack-protector
-                -fshort-wchar
-                -mno-red-zone
-        )
-        target_link_options(netdata_driver PRIVATE
-                -Wl,--entry,DriverEntry@8
-                -nostdlib
-                -Wl,--subsystem,native
-                -Wl,--image-base,0x10000
-        )
-        target_link_libraries(netdata_driver kernel32 ntoskrnl)
-
-        install(FILES "${NETDATA_DRIVER_FILE}"
-                COMPONENT netdata_win_driver
-                DESTINATION "${BINDIR}")
 endif()
 
 target_compile_options(netdata PRIVATE
@@ -3073,11 +2854,9 @@ target_link_libraries(netdata PRIVATE
         "$<$<BOOL:${ENABLE_MQTTWEBSOCKETS}>:mqttwebsockets>"
         "$<$<BOOL:${ENABLE_EXPORTER_MONGODB}>:${MONGOC_LIBRARIES}>"
         "$<$<BOOL:${ENABLE_EXPORTER_PROMETHEUS_REMOTE_WRITE}>:${SNAPPY_LIBRARIES}>"
-        "$<$<BOOL:${OS_MACOS}>:${IOKIT};${FOUNDATION}>"
         "$<$<BOOL:${ENABLE_SENTRY}>:sentry>"
         "$<$<BOOL:${ENABLE_WEBRTC}>:LibDataChannel::LibDataChannelStatic>"
         "$<$<BOOL:${CURL_FOUND}>:PkgConfig::CURL>"
-        "$<$<BOOL:${OS_WINDOWS}>:odbc32;setupapi>"
 )
 
 netdata_add_protobuf(netdata)
@@ -3152,7 +2931,7 @@ set(NETDATACLI_FILES
         src/cli/cli.c
 )
 
-add_executable(netdatacli ${NETDATACLI_FILES} "$<$<BOOL:${OS_WINDOWS}>:${NETDATACLI_RES_FILES}>")
+add_executable(netdatacli ${NETDATACLI_FILES})
 target_link_libraries(netdatacli libnetdata)
 
 install(TARGETS netdatacli
@@ -3164,11 +2943,7 @@ install(TARGETS netdatacli
 #
 
 if(ENABLE_PLUGIN_GO)
-    if (OS_WINDOWS)
-        set(GO_PLUGIN_BIN go.d.plugin.exe)
-    else()
-        set(GO_PLUGIN_BIN go.d.plugin)
-    endif()
+    set(GO_PLUGIN_BIN go.d.plugin)
 
     add_go_target(go-plugin ${GO_PLUGIN_BIN} src/go cmd/godplugin)
 
@@ -3177,11 +2952,7 @@ if(ENABLE_PLUGIN_GO)
             DESTINATION usr/libexec/netdata/plugins.d)
 
     # Build and install nd-mcp (stdio-golang bridge) exactly like go.d.plugin
-    if (OS_WINDOWS)
-        set(ND_MCP_NAME nd-mcp.exe)
-    else()
-        set(ND_MCP_NAME nd-mcp)
-    endif()
+    set(ND_MCP_NAME nd-mcp)
 
     add_go_target(nd-mcp-target ${ND_MCP_NAME} src/web/mcp/bridges/stdio-golang .)
     install(PROGRAMS
@@ -3316,18 +3087,11 @@ set(registrydir_POST "${VARLIB_DIR}/registry")
 set(netdata_user_POST "${NETDATA_USER}")
 set(netdata_group_POST "${NETDATA_USER}")
 
-if(NOT OS_WINDOWS)
-        configure_file(src/claim/netdata-claim.sh.in src/claim/netdata-claim.sh @ONLY)
-        install(PROGRAMS
-                ${CMAKE_BINARY_DIR}/src/claim/netdata-claim.sh
-                COMPONENT netdata
-                DESTINATION "${BINDIR}")
-else()
-        install(PROGRAMS
-                ${CMAKE_BINARY_DIR}/NetdataClaim.exe
-                COMPONENT netdata
-                DESTINATION "${BINDIR}")
-endif()
+configure_file(src/claim/netdata-claim.sh.in src/claim/netdata-claim.sh @ONLY)
+install(PROGRAMS
+        ${CMAKE_BINARY_DIR}/src/claim/netdata-claim.sh
+        COMPONENT netdata
+        DESTINATION "${BINDIR}")
 
 #
 # We don't check ENABLE_PLUGIN_CGROUP_NETWORK because rpm builds assume
@@ -3541,49 +3305,47 @@ if(BUILD_FOR_PACKAGING)
                 DESTINATION etc/init.d)
 endif()
 
-if(NOT OS_WINDOWS)
-  install(PROGRAMS
-          packaging/installer/netdata-updater.sh
-          COMPONENT netdata
-          DESTINATION usr/libexec/netdata)
+install(PROGRAMS
+        packaging/installer/netdata-updater.sh
+        COMPONENT netdata
+        DESTINATION usr/libexec/netdata)
 
-  install(FILES
-          system/netdata.conf
-          system/netdata-updater.conf
-          COMPONENT netdata
-          DESTINATION ${NETDATA_CONF_DEST})
+install(FILES
+        system/netdata.conf
+        system/netdata-updater.conf
+        COMPONENT netdata
+        DESTINATION ${NETDATA_CONF_DEST})
 
-  configure_file(system/cron/netdata-updater-daily.in
-                 system/cron/netdata-updater-daily
-                 @ONLY)
-  install(FILES
-          ${CMAKE_BINARY_DIR}/system/cron/netdata-updater-daily
-          COMPONENT netdata
-          DESTINATION usr/lib/netdata/system/cron)
+configure_file(system/cron/netdata-updater-daily.in
+                system/cron/netdata-updater-daily
+                @ONLY)
+install(FILES
+        ${CMAKE_BINARY_DIR}/system/cron/netdata-updater-daily
+        COMPONENT netdata
+        DESTINATION usr/lib/netdata/system/cron)
 
-  configure_file(system/systemd/netdata-updater.service.in
-                 system/systemd/netdata-updater.service
-                 @ONLY)
-  install(FILES
-          ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
-          COMPONENT netdata
-          DESTINATION usr/lib/netdata/system/systemd)
+configure_file(system/systemd/netdata-updater.service.in
+                system/systemd/netdata-updater.service
+                @ONLY)
+install(FILES
+        ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
+        COMPONENT netdata
+        DESTINATION usr/lib/netdata/system/systemd)
 
-  install(FILES
-          system/systemd/netdata-updater.timer
-          COMPONENT netdata
-          DESTINATION usr/lib/netdata/system/systemd)
+install(FILES
+        system/systemd/netdata-updater.timer
+        COMPONENT netdata
+        DESTINATION usr/lib/netdata/system/systemd)
 
-  if(BUILD_FOR_PACKAGING)
-    install(FILES
-            ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
-            COMPONENT netdata
-            DESTINATION lib/systemd/system)
-    install(FILES
-            system/systemd/netdata-updater.timer
-            COMPONENT netdata
-            DESTINATION lib/systemd/system)
-  endif()
+if(BUILD_FOR_PACKAGING)
+install(FILES
+        ${CMAKE_BINARY_DIR}/system/systemd/netdata-updater.service
+        COMPONENT netdata
+        DESTINATION lib/systemd/system)
+install(FILES
+        system/systemd/netdata-updater.timer
+        COMPONENT netdata
+        DESTINATION lib/systemd/system)
 endif()
 
 #
@@ -3745,11 +3507,6 @@ if(ENABLE_PLUGIN_PYTHON)
           COMPONENT plugin-pythond
           DESTINATION usr/libexec/netdata/python.d)
 
-  if(OS_WINDOWS)
-    include(NetdataUtil)
-    precompile_python(usr/libexec/netdata/python.d plugin-pythond)
-  endif()
-
   install(FILES src/collectors/python.d.plugin/python.d.conf
           COMPONENT plugin-pythond
           DESTINATION usr/lib/netdata/conf.d)
@@ -3872,22 +3629,6 @@ install(CODE "
         file(INSTALL \"${CMAKE_BINARY_DIR}/${BUILD_INFO_CMAKE_CACHE_ARCHIVE_NAME}\"
              DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${BUILD_INFO_CMAKE_CACHE_ARCHIVE_PATH}\")
 ")
-
-#
-# vendor msys stuff on Windows
-#
-
-if(OS_WINDOWS)
-        install(FILES /usr/bin/msys-protobuf-32.dll
-                      /usr/bin/msys-uv-1.dll
-                      DESTINATION "${BINDIR}")
-
-        # Make bash & netdata happy
-        install(DIRECTORY DESTINATION tmp)
-
-        # Make curl work with ssl
-        install(DIRECTORY /usr/ssl DESTINATION usr)
-endif()
 
 #
 # Include packaging logic
