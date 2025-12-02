@@ -67,7 +67,6 @@ plugins.d/otel-plugin
 plugins.d/perf.plugin
 plugins.d/python.d.plugin
 plugins.d/slabinfo.plugin
-plugins.d/xenstat.plugin
 "
 
 if [ -d "${NETDATA_LIBEXEC_PREFIX}" ]; then

@@ -211,8 +211,6 @@ USAGE: ${PROGRAM} [options]
   --disable-go               Disable all Go components.
   --enable-plugin-nfacct     Enable nfacct plugin. Default: enable it when libmnl and libnetfilter_acct are available.
   --disable-plugin-nfacct    Explicitly disable the nfacct plugin.
-  --enable-plugin-xenstat    Enable the xenstat plugin. Default: enable it when libxenstat and libyajl are available.
-  --disable-plugin-xenstat   Explicitly disable the xenstat plugin.
   --enable-plugin-systemd-journal Enable the systemd journal plugin. Default: enable it when libsystemd is available.
   --disable-plugin-systemd-journal Explicitly disable the systemd journal plugin.
   --internal-systemd-journal Enable the internal journal file reader instead of using libsystemd
@@ -297,8 +295,6 @@ while [ -n "${1}" ]; do
     "--disable-plugin-charts") ENABLE_CHARTS=0 ;;
     "--enable-plugin-nfacct") ENABLE_NFACCT=1 ;;
     "--disable-plugin-nfacct") ENABLE_NFACCT=0 ;;
-    "--enable-plugin-xenstat") ENABLE_XENSTAT=1 ;;
-    "--disable-plugin-xenstat") ENABLE_XENSTAT=0 ;;
     "--enable-plugin-systemd-journal") ENABLE_SYSTEMD_JOURNAL=1 ;;
     "--disable-plugin-systemd-journal") ENABLE_SYSTEMD_JOURNAL=0 ;;
     "--internal-systemd-journal") USE_RUST_JOURNAL_FILE=1 ;;
@@ -896,11 +892,6 @@ if [ "$(id -u)" -eq 0 ]; then
   if [ -f "${NETDATA_PREFIX}/usr/libexec/netdata/plugins.d/nfacct.plugin" ]; then
     run chown "root:${NETDATA_GROUP}" "${NETDATA_PREFIX}/usr/libexec/netdata/plugins.d/nfacct.plugin"
     run chmod 4750 "${NETDATA_PREFIX}/usr/libexec/netdata/plugins.d/nfacct.plugin"
-  fi
-
-  if [ -f "${NETDATA_PREFIX}/usr/libexec/netdata/plugins.d/xenstat.plugin" ]; then
-    run chown "root:${NETDATA_GROUP}" "${NETDATA_PREFIX}/usr/libexec/netdata/plugins.d/xenstat.plugin"
-    run chmod 4750 "${NETDATA_PREFIX}/usr/libexec/netdata/plugins.d/xenstat.plugin"
   fi
 
   if [ -f "${NETDATA_PREFIX}/usr/libexec/netdata/plugins.d/ioping" ]; then

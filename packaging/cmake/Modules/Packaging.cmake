@@ -516,26 +516,6 @@ set(CPACK_DEBIAN_PLUGIN-SYSTEMD-UNITS_PACKAGE_CONTROL_EXTRA
 set(CPACK_DEBIAN_PLUGIN-SYSTEMD_UNITS_DEBUGINFO_PACKAGE On)
 
 #
-# xenstat.plugin
-#
-
-set(CPACK_COMPONENT_PLUGIN-XENSTAT_DEPENDS "netdata")
-set(CPACK_COMPONENT_PLUGIN-XENSTAT_DESCRIPTION
-		"The xenstat plugin for the Netdata Agent
- This plugin allows the Netdata Agent to collect metrics from the Xen
- Hypervisor.")
-
-set(CPACK_DEBIAN_PLUGIN-XENSTAT_PACKAGE_NAME "netdata-plugin-xenstat")
-set(CPACK_DEBIAN_PLUGIN-XENSTAT_PACKAGE_SECTION "net")
-set(CPACK_DEBIAN_PLUGIN-XENSTAT_PACKAGE_CONFLICTS "netdata (<< 1.40)")
-set(CPACK_DEBIAN_PLUGIN-XENSTAT_PACKAGE_PREDEPENDS "netdata-user")
-
-set(CPACK_DEBIAN_PLUGIN-XENSTAT_PACKAGE_CONTROL_EXTRA
-	  "${PKG_FILES_PATH}/deb/plugin-xenstat/postinst")
-
-set(CPACK_DEBIAN_PLUGIN-XENSTAT_DEBUGINFO_PACKAGE On)
-
-#
 # CPack components
 #
 
@@ -588,9 +568,6 @@ if(ENABLE_PLUGIN_SYSTEMD_JOURNAL)
 endif()
 if(ENABLE_PLUGIN_SYSTEMD_UNITS)
   list(APPEND CPACK_COMPONENTS_ALL "plugin-systemd-units")
-endif()
-if(ENABLE_PLUGIN_XENSTAT)
-        list(APPEND CPACK_COMPONENTS_ALL "plugin-xenstat")
 endif()
 if(ENABLE_PLUGIN_OTEL)
         list(APPEND CPACK_COMPONENTS_ALL "plugin-otel")

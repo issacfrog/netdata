@@ -60,19 +60,15 @@ case "${PKG_TYPE}" in
     DEB)
         case "$(dpkg-architecture -q DEB_TARGET_ARCH)" in
             amd64)
-                add_cmake_option ENABLE_PLUGIN_XENSTAT On
                 add_cmake_option ENABLE_PLUGIN_EBPF On
                 ;;
             arm64)
-                add_cmake_option ENABLE_PLUGIN_XENSTAT On
                 add_cmake_option ENABLE_PLUGIN_EBPF Off
                 ;;
             armhf)
-                add_cmake_option ENABLE_PLUGIN_XENSTAT Off
                 add_cmake_option ENABLE_PLUGIN_EBPF Off
                 ;;
             *)
-                add_cmake_option ENABLE_PLUGIN_XENSTAT Off
                 add_cmake_option ENABLE_PLUGIN_EBPF Off
                 ;;
         esac

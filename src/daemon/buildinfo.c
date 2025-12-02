@@ -1334,12 +1334,6 @@ __attribute__((constructor)) void initialize_build_info(void) {
 #ifdef ENABLE_PLUGIN_SLABINFO
     build_info_set_status(BIB_PLUGIN_SLABINFO, true);
 #endif
-#ifdef ENABLE_PLUGIN_XENSTAT
-    build_info_set_status(BIB_PLUGIN_XEN, true);
-#endif
-#ifdef HAVE_XENSTAT_VBD_ERROR
-    build_info_set_status(BIB_PLUGIN_XEN_VBD_ERROR, true);
-#endif
 
     build_info_set_status(BIB_EXPORT_PROMETHEUS_EXPORTER, true);
     build_info_set_status(BIB_EXPORT_GRAPHITE, true);

@@ -151,7 +151,6 @@ cmake_dependent_option(ENABLE_PLUGIN_PERF "Enable Linux performance counter moni
 cmake_dependent_option(ENABLE_PLUGIN_SLABINFO "Enable Linux kernel SLAB allocator monitoring" ${DEFAULT_FEATURE_STATE} "OS_LINUX" False)
 cmake_dependent_option(ENABLE_PLUGIN_SYSTEMD_JOURNAL "Enable systemd journal log collection" ${DEFAULT_FEATURE_STATE} "OS_LINUX" False)
 cmake_dependent_option(ENABLE_PLUGIN_SYSTEMD_UNITS "Enable systemd units information collection" ${DEFAULT_FEATURE_STATE} "OS_LINUX" False)
-cmake_dependent_option(ENABLE_PLUGIN_XENSTAT "Enable Xen domain monitoring" ${DEFAULT_FEATURE_STATE} "OS_LINUX" False)
 
 # Metrics exporters
 option(ENABLE_EXPORTER_PROMETHEUS_REMOTE_WRITE "Enable exporting to Prometheus via remote write API" ${DEFAULT_FEATURE_STATE})
@@ -2360,29 +2359,6 @@ if(ENABLE_PLUGIN_NFACCT)
                 ${PKG_FILES_PATH}/copyright
                 COMPONENT plugin-nfacct
                 DESTINATION usr/share/doc/netdata-plugin-nfacct)
-    endif()
-endif()
-
-if(ENABLE_PLUGIN_XENSTAT)
-    pkg_check_modules(XENSTAT REQUIRED xenstat)
-    pkg_check_modules(XENLIGHT REQUIRED xenlight)
-
-    set(XENSTAT_PLUGIN_FILES src/collectors/xenstat.plugin/xenstat_plugin.c)
-
-    add_executable(xenstat.plugin ${XENSTAT_PLUGIN_FILES})
-    target_link_libraries (xenstat.plugin libnetdata ${XENLIGHT_LIBRARIES} ${XENSTAT_LIBRARIES})
-    target_include_directories(xenstat.plugin PRIVATE ${XENLIGHT_INCLUDE_DIRS} ${XENSTAT_INCLUDE_DIRS})
-    target_compile_options(xenstat.plugin PRIVATE ${XENLIGHT_CFLAGS_OTHER} ${XENSTAT_CFLAGS_OTHER})
-
-    install(TARGETS xenstat.plugin
-            COMPONENT plugin-xenstat
-            DESTINATION usr/libexec/netdata/plugins.d)
-
-    if(BUILD_FOR_PACKAGING)
-        install(FILES
-                ${PKG_FILES_PATH}/copyright
-                COMPONENT plugin-xenstat
-                DESTINATION usr/share/doc/netdata-plugin-xenstat)
     endif()
 endif()
 

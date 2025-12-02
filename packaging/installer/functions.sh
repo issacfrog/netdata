@@ -384,7 +384,6 @@ prepare_cmake_options() {
   check_for_feature EXPORTER_MONGODB "${EXPORTER_MONGODB}" libmongoc-1.0
   check_for_feature PLUGIN_FREEIPMI "${ENABLE_FREEIPMI}" libipmimonitoring
   check_for_feature PLUGIN_NFACCT "${ENABLE_NFACCT}" libnetfilter_acct libnml
-  check_for_feature PLUGIN_XENSTAT "${ENABLE_XENSTAT}" xenstat xenlight
 }
 
 # -----------------------------------------------------------------------------

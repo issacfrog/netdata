@@ -33,7 +33,6 @@ This section outlines the required privileges and how they are configured in dif
 | go.d.plugin            | CAP_DAC_READ_SEARCH, CAP_NET_ADMIN, CAP_NET_RAW | setuid root                                         |
 | freeipmi.plugin        | setuid root                                     | setuid root                                         |
 | nfacct.plugin          | setuid root                                     | setuid root                                         |
-| xenstat.plugin         | setuid root                                     | setuid root                                         |
 | ioping                 | setuid root                                     | setuid root                                         |
 | ebpf.plugin            | setuid root                                     | setuid root                                         |
 | cgroup-network         | setuid root                                     | setuid root                                         |

@@ -113,21 +113,6 @@ AutoReqProv: yes
 %endif
 %endif
 
-# Disable xenstat if we’re not on Fedora or openSUSE 15.6 or earlier
-%if 0%{?suse_version} || 0%{?fedora}
-%if 0%{!?amzm:1}
-%global _have_xenstat 0
-%else
-%if 0%{?suse_version} >= 1600
-%global _have_xenstat 0
-%else
-%global _have_xenstat 1
-%endif
-%endif
-%else
-%global _have_xenstat 0
-%endif
-
 # Skip MongoDB exporter on known problem platforms
 %if 0%{?oraclelinux} || 0%{?suse_version} || 0%{?amzn}
 %global _have_mongo_exporter 0
@@ -246,9 +231,6 @@ Requires: %{name}-plugin-perf = %{version}
 %if %{_have_nfacct}
 Requires: %{name}-plugin-nfacct = %{version}
 %endif
-%if %{_have_xenstat}
-Suggests: %{name}-plugin-xenstat = %{version}
-%endif
 %if %{_have_freeipmi} && 0%{?centos_ver} != 6 && 0%{?centos_ver} != 7 && 0%{?amazon_linux} != 2
 Suggests: %{name}-plugin-freeipmi = %{version}
 %endif
@@ -329,13 +311,6 @@ BuildRequires: snappy-devel
 %endif
 # end - prometheus remote write dependencies
 
-# Xenstat dependencies
-%if %{_have_xenstat}
-BuildRequires: pkgconfig(xenstat)
-BuildRequires: pkgconfig(xenlight)
-%endif
-# end - xenstat dependencies
-
 # MongoDB exporter dependencies
 %if %{_have_mongo_exporter}
 BuildRequires: pkgconfig(libmongoc-1.0)
@@ -397,11 +372,6 @@ advanced correlations and fast root cause analysis, native horizontal scalabilit
 	-DENABLE_PLUGIN_NFACCT=On \
 	%else
 	-DENABLE_PLUGIN_NFACCT=Off \
-	%endif
-	%if %{_have_xenstat}
-	-DENABLE_PLUGIN_XENSTAT=On \
-	%else
-	-DENABLE_PLUGIN_XENSTAT=Off \
 	%endif
 	%if 0%{?centos_ver:1}
 	%if %{centos_ver} < 8
@@ -665,9 +635,6 @@ rm -rf "${RPM_BUILD_ROOT}"
 
 # systemd-journal belongs to a different sub-package
 %exclude %{_libexecdir}/%{name}/plugins.d/systemd-journal.plugin
-
-# xenstat belongs to a different sub-package
-%exclude %{_libexecdir}/%{name}/plugins.d/xenstat.plugin
 
 # Network viewer belongs to a different sub-package
 %exclude %{_libexecdir}/%{name}/plugins.d/network-viewer.plugin
@@ -939,25 +906,6 @@ Requires(pre): %{name}-user >= %{version}
 %files plugin-systemd-units
 %defattr(0750,root,netdata,0750)
 %{_libexecdir}/%{name}/plugins.d/systemd-units.plugin
-%endif
-
-%if %{_have_xenstat}
-%package plugin-xenstat
-Summary: The xenstat plugin for the Netdata Agent
-Group: Applications/System
-Requires: %{name} = %{version}
-Conflicts: %{name} < %{version}
-%if ! %{_have_sysuser}
-Requires(pre): %{name}-user >= %{version}
-%endif
-
-%description plugin-xenstat
- This plugin allows Netdata to collect metrics from the Xen Hypervisor.
-
-%files plugin-xenstat
-%defattr(0750,root,netdata,0750)
-# SUID needed for data collection
-%attr(4750,root,netdata) %{_libexecdir}/%{name}/plugins.d/xenstat.plugin
 %endif
 
 %package plugin-network-viewer
