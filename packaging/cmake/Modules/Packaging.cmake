@@ -56,7 +56,7 @@ set(CPACK_DEBIAN_NETDATA_PACKAGE_NAME "netdata")
 set(CPACK_DEBIAN_NETDATA_PACKAGE_SECTION "net")
 set(CPACK_DEBIAN_NETDATA_PACKAGE_PREDEPENDS "netdata-user, libcap2-bin")
 set(CPACK_DEBIAN_NETDATA_PACKAGE_SUGGESTS
-		"netdata-plugin-cups, netdata-plugin-freeipmi, netdata-plugin-ibm")
+		"netdata-plugin-freeipmi")
 set(CPACK_DEBIAN_NETDATA_PACKAGE_RECOMMENDS
 		"netdata-plugin-systemd-journal, netdata-plugin-systemd-units, \
 netdata-plugin-network-viewer")
@@ -193,23 +193,6 @@ set(CPACK_DEBIAN_PLUGIN-CHARTSD_PACKAGE_CONTROL_EXTRA
 	  "${PKG_FILES_PATH}/deb/plugin-chartsd/postinst")
 
 set(CPACK_DEBIAN_PLUGIN-CHARTSD_DEBUGINFO_PACKAGE Off)
-
-#
-# cups.plugin
-#
-
-set(CPACK_COMPONENT_PLUGIN-CUPS_DEPENDS "netdata")
-set(CPACK_COMPONENT_PLUGIN-CUPS_DESCRIPTION
-	  "The CUPS metrics collection plugin for the Netdata Agent
- This plugin allows the Netdata Agent to collect metrics from the Common UNIX Printing System.")
-
-set(CPACK_DEBIAN_PLUGIN-CUPS_PACKAGE_NAME "netdata-plugin-cups")
-set(CPACK_DEBIAN_PLUGIN-CUPS_PACKAGE_SECTION "net")
-set(CPACK_DEBIAN_PLUGIN-CUPS_PACKAGE_PREDEPENDS "netdata-user")
-set(CPACK_DEBIAN_PLUGIN-CUPS_PACKAGE_CONTROL_EXTRA
-	  "${PKG_FILES_PATH}/deb/plugin-cups/postinst")
-
-set(CPACK_DEBIAN_PLUGIN-CUPS_DEBUGINFO_PACKAGE On)
 
 #
 # debugfs.plugin
@@ -529,9 +512,6 @@ if(ENABLE_PLUGIN_APPS)
 endif()
 if(ENABLE_PLUGIN_CHARTS)
   list(APPEND CPACK_COMPONENTS_ALL "plugin-chartsd")
-endif()
-if(ENABLE_PLUGIN_CUPS)
-        list(APPEND CPACK_COMPONENTS_ALL "plugin-cups")
 endif()
 if(ENABLE_PLUGIN_DEBUGFS)
         list(APPEND CPACK_COMPONENTS_ALL "plugin-debugfs")

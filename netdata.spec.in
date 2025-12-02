@@ -95,13 +95,6 @@ AutoReqProv: yes
 %global _have_freeipmi 1
 %endif
 
-# Disable CUPS on old RHEL systems.
-%if 0%{?centos_ver} != 6 && 0%{?centos_ver} != 7 && 0%{?amazon_linux} != 2
-%global _have_cups 1
-%else
-%global _have_cups 0
-%endif
-
 # Disable NFACCT for RHEL equivalents, Amazon Linux, and openSUSE 16.0 and newer
 %if 0%{?centos_ver} || 0%{?amzn}
 %global _have_nfacct 0
@@ -235,9 +228,6 @@ Requires: %{name}-plugin-nfacct = %{version}
 Suggests: %{name}-plugin-freeipmi = %{version}
 %endif
 %if 0%{?centos_ver} != 7 && 0%{?amazon_linux} != 2
-%if %{_have_cups}
-Suggests: %{name}-plugin-cups = %{version}
-%endif
 Recommends: %{name}-plugin-systemd-journal = %{version}
 Recommends: %{name}-plugin-systmed-units = %{version}
 Recommends: %{name}-plugin-network-viewer = %{version}
@@ -272,12 +262,6 @@ BuildRequires: pkgconfig(libnetfilter_acct)
 BuildRequires: pkgconfig(libipmimonitoring)
 %endif
 # end - freeipmi plugin dependencies
-
-# CUPS plugin dependencies
-%if %{_have_cups}
-BuildRequires: cups-devel
-%endif
-# end - cups plugin dependencies
 
 # go.d.plugin dependencies
 #
@@ -348,11 +332,6 @@ advanced correlations and fast root cause analysis, native horizontal scalabilit
 	-DUSE_LTO=Off \
 	%endif
 	-DProtobuf_LIBRARY=%{_original_libdir}/libprotobuf.so \
-	%if %{_have_cups}
-	-DENABLE_PLUGIN_CUPS=On \
-	%else
-	-DENABLE_PLUGIN_CUPS=Off \
-	%endif
 	%if %{_have_ebpf}
 	-DENABLE_PLUGIN_EBPF=On \
 	%if 0%{?centos_ver:1}
@@ -640,25 +619,6 @@ rm -rf "${RPM_BUILD_ROOT}"
 %exclude %{_libexecdir}/%{name}/plugins.d/network-viewer.plugin
 
 %exclude %{_sysusersdir}/%{name}.conf
-
-# CUPS belongs to a different sub package
-%if %{_have_cups}
-%exclude %{_libexecdir}/%{name}/plugins.d/cups.plugin
-
-%package plugin-cups
-Summary: The CUPS metrics collection plugin for the Netdata Agent
-Group: Applications/System
-Requires: %{name} = %{version}
-%if ! %{_have_sysuser}
-Requires(pre): %{name}-user >= %{version}
-%endif
-
-%description plugin-cups
- This plugin allows the Netdata Agent to collect metrics from the Common UNIX Printing System.
-
-%files plugin-cups
-%attr(0750,root,netdata) %{_libexecdir}/%{name}/plugins.d/cups.plugin
-%endif
 
 %if 0%{?_have_freeipmi}
 %package plugin-freeipmi

@@ -90,7 +90,6 @@ typedef enum __attribute__((packed)) {
     BIB_PLUGIN_IDLEJITTER,
     BIB_PLUGIN_BASH,
     BIB_PLUGIN_DEBUGFS,
-    BIB_PLUGIN_CUPS,
     BIB_PLUGIN_EBPF,
     BIB_PLUGIN_FREEIPMI,
     BIB_PLUGIN_NETWORK_VIEWER,
@@ -821,14 +820,6 @@ static struct {
                 .json = "debugfs",
                 .value = NULL,
         },
-        [BIB_PLUGIN_CUPS] = {
-                .category = BIC_PLUGINS,
-                .type = BIT_BOOLEAN,
-                .analytics = "CUPS",
-                .print = "cups (monitor printers and print jobs)",
-                .json = "cups",
-                .value = NULL,
-        },
         [BIB_PLUGIN_EBPF] = {
                 .category = BIC_PLUGINS,
                 .type = BIT_BOOLEAN,
@@ -1285,9 +1276,6 @@ __attribute__((constructor)) void initialize_build_info(void) {
 
 #ifdef ENABLE_PLUGIN_DEBUGFS
     build_info_set_status(BIB_PLUGIN_DEBUGFS, true);
-#endif
-#ifdef ENABLE_PLUGIN_CUPS
-    build_info_set_status(BIB_PLUGIN_CUPS, true);
 #endif
 #ifdef ENABLE_PLUGIN_EBPF
     build_info_set_status(BIB_PLUGIN_EBPF, true);

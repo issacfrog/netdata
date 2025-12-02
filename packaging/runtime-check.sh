@@ -53,7 +53,6 @@ NETDATA_LIBEXEC_PARTS="
 plugins.d/apps.plugin
 plugins.d/cgroup-network
 plugins.d/charts.d.plugin
-plugins.d/cups.plugin
 plugins.d/debugfs.plugin
 plugins.d/ebpf.plugin
 plugins.d/freeipmi.plugin

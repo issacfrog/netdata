@@ -290,6 +290,85 @@ WebRTC功能用于在Netdata Agent和客户端之间建立点对点数据通道�
 
 ---
 
+# CUPS插件相关文件删除清单
+
+## 删除的目录
+
+### 1. src/collectors/cups.plugin/ (整个目录)
+CUPS插件收集器目录，包含以下文件：
+- cups_plugin.c - CUPS插件主实现
+- metadata.yaml - 插件元数据
+- README.md - 插件说明文档
+- integrations/cups.md - CUPS集成文档
+
+### 2. packaging/cmake/pkg-files/deb/plugin-cups/ (整个目录)
+Debian包安装后处理脚本目录，包含：
+- postinst - 安装后脚本
+
+## 删除的单独文件
+
+无单独文件删除（所有文件都在上述目录中）
+
+## 修改的配置文件
+
+### CMake构建文件
+1. **CMakeLists.txt** - 删除了：
+   - 第138行：`ENABLE_PLUGIN_CUPS` 选项定义
+   - 第2374-2412行：CUPS插件构建和安装代码（包括CUPS库检测、编译选项、链接库等）
+
+2. **packaging/cmake/config.cmake.h.in** - 删除了 `ENABLE_PLUGIN_CUPS` 宏定义
+
+### 打包配置
+3. **packaging/cmake/Modules/Packaging.cmake** - 删除了：
+   - CUPS插件组件配置（CPACK_COMPONENT_PLUGIN-CUPS_*）
+   - Debian包配置（CPACK_DEBIAN_PLUGIN-CUPS_*）
+   - 从主包的SUGGESTS中移除了 `netdata-plugin-cups`
+   - 从CPACK_COMPONENTS_ALL中移除了 `plugin-cups`
+
+4. **netdata.spec.in** - 删除了：
+   - `_have_cups` 全局变量定义（第98-103行）
+   - CUPS插件包的Suggests配置（第238-240行）
+   - CUPS插件构建依赖（BuildRequires: cups-devel，第277-279行）
+   - CMake构建配置中的CUPS选项（第351-355行）
+   - 文件排除列表中的CUPS文件（第645-646行）
+   - 完整的 `plugin-cups` 包定义（第648-661行）
+
+### 安装脚本
+5. **packaging/installer/functions.sh** - 删除了：
+   - CUPS库检测代码（第358-364行）
+   - `enable_feature PLUGIN_CUPS` 调用
+
+### 运行时检查脚本
+6. **packaging/makeself/jobs/81-netdata-runtime-check.sh** - 从 `NETDATA_SKIP_LIBEXEC_PARTS` 中移除了 `cups`
+
+7. **packaging/runtime-check.sh** - 从插件列表中移除了 `plugins.d/cups.plugin`
+
+### 构建信息
+8. **src/daemon/buildinfo.c** - 删除了：
+   - `BIB_PLUGIN_CUPS` 枚举值
+   - 对应的构建信息数组项
+   - `ENABLE_PLUGIN_CUPS` 条件编译代码
+
+## CUPS插件删除统计信息
+
+- **删除的目录数**: 2个
+- **删除的单独文件数**: 0个
+- **修改的配置文件数**: 8个
+- **src/collectors/cups.plugin/目录中的文件数**: 4个
+- **总计删除的文件数**: 约4个文件
+
+## 说明
+
+CUPS插件（cups.plugin）用于监控Common UNIX Printing System（通用UNIX打印系统），可以收集打印机和打印作业的指标。
+
+由于项目不需要此功能，所有相关代码、配置和构建脚本已从代码库中删除。删除的内容包括：
+- CUPS插件源代码
+- CUPS库的构建配置和依赖检测
+- 所有相关的打包配置（RPM和Debian）
+- 运行时检查脚本中的引用
+
+---
+
 # IBM插件相关文件删除清单
 
 ## 删除的目录
