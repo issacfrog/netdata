@@ -153,8 +153,6 @@ cmake_dependent_option(ENABLE_PLUGIN_SYSTEMD_JOURNAL "Enable systemd journal log
 cmake_dependent_option(ENABLE_PLUGIN_SYSTEMD_UNITS "Enable systemd units information collection" ${DEFAULT_FEATURE_STATE} "OS_LINUX" False)
 cmake_dependent_option(ENABLE_PLUGIN_XENSTAT "Enable Xen domain monitoring" ${DEFAULT_FEATURE_STATE} "OS_LINUX" False)
 
-cmake_dependent_option(ENABLE_PLUGIN_IBM "Enable IBM ecosystem collectors (requires CGO)" False "OS_LINUX AND CPU_X86_64" False)
-
 # Metrics exporters
 option(ENABLE_EXPORTER_PROMETHEUS_REMOTE_WRITE "Enable exporting to Prometheus via remote write API" ${DEFAULT_FEATURE_STATE})
 option(ENABLE_EXPORTER_MONGODB "Enable exporting to MongoDB" ${DEFAULT_FEATURE_STATE})
@@ -281,7 +279,7 @@ if(ENABLE_JEMALLOC)
     endif()
 endif()
 
-if(ENABLE_PLUGIN_GO OR ENABLE_PLUGIN_IBM)
+if(ENABLE_PLUGIN_GO)
     include(NetdataGoTools)
 
     find_min_go_version("${CMAKE_SOURCE_DIR}/src/go")
@@ -1844,14 +1842,6 @@ set(DISKSPACE_PLUGIN_FILES
         src/collectors/diskspace.plugin/plugin_diskspace.c
 )
 
-set(MACOS_PLUGIN_FILES
-        src/collectors/macos.plugin/plugin_macos.c
-        src/collectors/macos.plugin/plugin_macos.h
-        src/collectors/macos.plugin/macos_sysctl.c
-        src/collectors/macos.plugin/macos_mach_smi.c
-        src/collectors/macos.plugin/macos_fw.c
-)
-
 set(FREEBSD_PLUGIN_FILES
         src/collectors/freebsd.plugin/plugin_freebsd.c
         src/collectors/freebsd.plugin/plugin_freebsd.h
@@ -1863,64 +1853,6 @@ set(FREEBSD_PLUGIN_FILES
         src/collectors/freebsd.plugin/freebsd_ipfw.c
         src/collectors/proc.plugin/zfs_common.c
         src/collectors/proc.plugin/zfs_common.h
-)
-
-set(WINDOWS_EVENTS_PLUGIN_FILES
-        src/collectors/windows-events.plugin/windows-events.c
-        src/collectors/windows-events.plugin/windows-events.h
-        src/collectors/windows-events.plugin/windows-events-query.h
-        src/collectors/windows-events.plugin/windows-events-query.c
-        src/collectors/windows-events.plugin/windows-events-sources.c
-        src/collectors/windows-events.plugin/windows-events-sources.h
-        src/collectors/windows-events.plugin/windows-events-unicode.c
-        src/collectors/windows-events.plugin/windows-events-unicode.h
-        src/collectors/windows-events.plugin/windows-events-xml.c
-        src/collectors/windows-events.plugin/windows-events-xml.h
-        src/collectors/windows-events.plugin/windows-events-providers.c
-        src/collectors/windows-events.plugin/windows-events-providers.h
-        src/collectors/windows-events.plugin/windows-events-fields-cache.c
-        src/collectors/windows-events.plugin/windows-events-fields-cache.h
-        src/collectors/windows-events.plugin/windows-events-query-builder.c
-        src/collectors/windows-events.plugin/windows-events-query-builder.h
-        src/collectors/windows-events.plugin/windows-events-query-evt-variant.c
-)
-
-set(WINDOWS_PLUGIN_FILES
-        src/collectors/windows.plugin/windows_plugin.c
-        src/collectors/windows.plugin/windows_plugin.h
-        src/collectors/windows.plugin/GetSystemUptime.c
-        src/collectors/windows.plugin/GetSystemRAM.c
-        src/collectors/windows.plugin/GetSystemCPU.c
-        src/collectors/windows.plugin/GetPowerSupply.c
-        src/collectors/windows.plugin/GetServicesStatus.c
-        src/collectors/windows.plugin/GetSensors.c
-        src/collectors/windows.plugin/GetHardwareInfo.c
-        src/collectors/windows.plugin/MonitorSQL.c
-        src/collectors/windows.plugin/perflib-adcs.c
-        src/collectors/windows.plugin/perflib-adfs.c
-        src/collectors/windows.plugin/perflib-rrd.c
-        src/collectors/windows.plugin/perflib-rrd.h
-        src/collectors/windows.plugin/perflib-ad.c
-        src/collectors/windows.plugin/perflib-mssql-queries.h
-        src/collectors/windows.plugin/perflib-storage.c
-        src/collectors/windows.plugin/perflib-processor.c
-        src/collectors/windows.plugin/perflib-thermalzone.c
-        src/collectors/windows.plugin/perflib-objects.c
-        src/collectors/windows.plugin/perflib-network.c
-        src/collectors/windows.plugin/perflib-netframework.c
-        src/collectors/windows.plugin/perflib-mssql.c
-        src/collectors/windows.plugin/perflib-memory.c
-        src/collectors/windows.plugin/perflib-processes.c
-        src/collectors/windows.plugin/perflib-web-service.c
-        src/collectors/windows.plugin/perflib-hyperv.c
-        src/collectors/windows.plugin/perflib-exchange.c
-        src/collectors/windows.plugin/perflib-numa.c
-        src/collectors/windows.plugin/perflib-asp.c
-)
-
-set(WINDOWS_PLUGIN_DRIVER
-        src/collectors/windows.plugin/netdata_win_driver.c
-        src/collectors/windows.plugin/netdata_win_driver.h
 )
 
 set(PROC_PLUGIN_FILES
@@ -2959,37 +2891,6 @@ if(ENABLE_PLUGIN_GO)
             ${CMAKE_BINARY_DIR}/${ND_MCP_NAME}
             COMPONENT plugin-go
             DESTINATION "${BINDIR}")
-endif()
-
-#
-# Build ibm.d.plugin
-#
-
-if(ENABLE_PLUGIN_IBM)
-    pkg_check_modules(ODBC REQUIRED odbc)
-    include(NetdataIBMPlugin)
-    add_ibm_plugin_target()
-
-    install(PROGRAMS ${CMAKE_BINARY_DIR}/ibm.d.plugin
-            COMPONENT plugin-ibm
-            DESTINATION usr/libexec/netdata/plugins.d)
-
-    # Install IBM plugin configuration files
-    install(FILES src/go/plugin/ibm.d/config/ibm.d.conf
-            COMPONENT plugin-ibm
-            DESTINATION usr/lib/netdata/conf.d)
-
-    install(FILES
-            src/go/plugin/ibm.d/config/ibm.d/as400.conf
-            src/go/plugin/ibm.d/config/ibm.d/db2.conf
-            src/go/plugin/ibm.d/config/ibm.d/websphere_jmx.conf
-            src/go/plugin/ibm.d/config/ibm.d/websphere_mp.conf
-            src/go/plugin/ibm.d/config/ibm.d/websphere_pmi.conf
-            COMPONENT plugin-ibm
-            DESTINATION usr/lib/netdata/conf.d/ibm.d
-    )
-
-    install_ibm_runtime(plugin-ibm)
 endif()
 
 #

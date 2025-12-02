@@ -175,3 +175,64 @@ macOS launchd服务配置目录，包含以下文件：
 
 注意：代码中可能仍存在一些条件编译指令（如 `#ifdef OS_WINDOWS`、`#ifdef OS_MACOS`），这些是正常的跨平台代码结构，用于在编译时排除Windows和macOS相关代码。
 
+---
+
+# IBM插件相关文件删除清单
+
+## 删除的目录
+
+### 1. src/go/plugin/ibm.d/ (整个目录)
+IBM生态系统监控插件目录，包含以下模块：
+- **modules/as400/** - IBM i (AS/400) 监控模块
+- **modules/db2/** - IBM DB2 数据库监控模块
+- **modules/mq/** - IBM MQ 消息队列监控模块
+- **modules/websphere/** - WebSphere Application Server 监控模块
+  - jmx/ - JMX监控
+  - mp/ - MicroProfile Metrics监控
+  - pmi/ - PMI监控
+- **protocols/** - 协议实现（PCF、JMX、ODBC等）
+- **pkg/** - 共享包（ODBC驱动、数据库驱动等）
+- **config/** - 配置文件
+- **samples.d/** - 示例数据
+
+### 2. src/go/cmd/ibmdplugin/ (整个目录)
+IBM插件主程序入口，包含：
+- main.go - 主程序入口
+- stub.go - 存根文件
+
+### 3. packaging/cmake/pkg-files/deb/plugin-ibm/ (整个目录)
+Debian包安装后处理脚本目录，包含：
+- postinst - 安装后脚本
+
+## 删除的单独文件
+
+### CMake构建文件
+1. `packaging/cmake/Modules/NetdataIBMPlugin.cmake` - IBM插件CMake构建配置
+
+### 安装脚本
+2. `packaging/installer/install-ibm-libs.sh.in` - IBM MQ客户端库安装脚本模板
+
+### 配置文件修改
+3. `CMakeLists.txt` - 删除了IBM插件相关的构建代码（第156行、第284行、第2968-2993行）
+4. `packaging/cmake/Modules/Packaging.cmake` - 删除了IBM插件组件配置（第571-574行）
+5. `packaging/build-package.sh` - 删除了IBM插件构建选项（第65、70、75、80行）
+6. `netdata.spec.in` - 删除了IBM插件RPM包定义和相关配置
+
+## IBM插件删除统计信息
+
+- **删除的目录数**: 3个
+- **删除的单独文件数**: 2个
+- **修改的配置文件数**: 4个
+- **src/go/plugin/ibm.d/目录中的文件数**: 约200+个文件
+- **总计删除的文件数**: 约200+个文件
+
+## 说明
+
+IBM插件（ibm.d.plugin）用于监控IBM生态系统，包括：
+- IBM i (AS/400) 系统监控
+- IBM DB2 数据库监控
+- IBM MQ 消息队列监控
+- WebSphere Application Server 监控
+
+由于项目不需要这些功能，所有相关代码、配置和构建脚本已从代码库中删除。
+
