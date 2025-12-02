@@ -899,10 +899,6 @@ set(LIBNETDATA_FILES
         src/libnetdata/os/get_pid_max.h
         src/libnetdata/os/os-freebsd-wrappers.c
         src/libnetdata/os/os-freebsd-wrappers.h
-        src/libnetdata/os/os-macos-wrappers.c
-        src/libnetdata/os/os-macos-wrappers.h
-        src/libnetdata/os/os-windows-wrappers.c
-        src/libnetdata/os/os-windows-wrappers.h
         src/libnetdata/os/get_system_cpus.c
         src/libnetdata/os/get_system_cpus.h
         src/libnetdata/os/sleep.c
@@ -913,14 +909,6 @@ set(LIBNETDATA_FILES
         src/libnetdata/os/setenv.h
         src/libnetdata/os/strndup.c
         src/libnetdata/os/strndup.h
-        src/libnetdata/os/windows-wmi/windows-wmi.c
-        src/libnetdata/os/windows-wmi/windows-wmi.h
-        src/libnetdata/os/windows-wmi/windows-wmi-GetDiskDriveInfo.c
-        src/libnetdata/os/windows-wmi/windows-wmi-GetDiskDriveInfo.h
-        src/libnetdata/os/windows-perflib/perflib.c
-        src/libnetdata/os/windows-perflib/perflib.h
-        src/libnetdata/os/windows-perflib/perflib-names.c
-        src/libnetdata/os/windows-perflib/perflib-dump.c
         src/libnetdata/os/system-maps/cached-uid-username.c
         src/libnetdata/os/system-maps/cached-uid-username.h
         src/libnetdata/os/system-maps/cached-sid-username.c
@@ -933,7 +921,6 @@ set(LIBNETDATA_FILES
         src/libnetdata/spawn_server/spawn_server.h
         src/libnetdata/spawn_server/spawn_popen.c
         src/libnetdata/spawn_server/spawn_popen.h
-        src/libnetdata/spawn_server/spawn_server_windows.c
         src/libnetdata/spawn_server/spawn_server_internals.h
         src/libnetdata/spawn_server/spawn_server_libuv.c
         src/libnetdata/spawn_server/spawn_server_posix.c
@@ -982,12 +969,10 @@ set(LIBNETDATA_FILES
         src/libnetdata/log/nd_log-format-logfmt.c
         src/libnetdata/log/nd_log-format-json.c
         src/libnetdata/log/nd_log-to-file.c
-        src/libnetdata/log/nd_log-to-windows-events.c
         src/libnetdata/string/utf8.c
         src/libnetdata/spawn_server/log-forwarder.c
         src/libnetdata/spawn_server/log-forwarder.h
         src/libnetdata/log/nd_log-common.h
-        src/libnetdata/log/nd_log-to-windows-common.h
         src/libnetdata/common.h
         src/libnetdata/xxHash/xxhash.h
         src/libnetdata/os/random.c
@@ -1796,13 +1781,6 @@ set(CLAIM_PLUGIN_FILES
         src/claim/claim-with-api.c
         src/claim/cloud-status.c
         src/claim/cloud-status.h
-)
-
-set(CLAIM_WINDOWS_FILES
-        src/claim/main.c
-        src/claim/main.h
-        src/claim/ui.c
-        src/claim/ui.h
 )
 
 set(ACLK_ALWAYS_BUILD
