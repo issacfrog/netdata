@@ -678,10 +678,6 @@ check_c_source_compiles("
     }
 " HAVE_RAND_S)
 
-if(OS_FREEBSD)
-        set(HAVE_BUILTIN_ATOMICS True)
-endif()
-
 # openssl/crypto
 pkg_check_modules(TLS IMPORTED_TARGET openssl)
 
@@ -2051,7 +2047,7 @@ target_include_directories(libnetdata BEFORE PUBLIC ${CONFIG_H_DIR} ${CMAKE_SOUR
 
 target_link_libraries(libnetdata PUBLIC
         "$<$<BOOL:${ENABLE_MIMALLOC}>:mimalloc-static>"
-        "$<$<NOT:$<BOOL:${HAVE_BUILTIN_ATOMICS}>>:atomic>"
+        "$<$<NOT:$<BOOL:${HAVE_BUILTIN_ATOMICS}>>:atomic"
         "$<$<BOOL:${OS_LINUX}>:pthread;rt>"
         "$<$<BOOL:${LINK_LIBM}>:m>"
         "${SYSTEMD_LDFLAGS}")
