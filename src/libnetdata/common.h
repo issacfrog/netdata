@@ -30,10 +30,6 @@ extern "C" {
 #define ENV64BIT 1
 #endif
 
-#ifdef HAVE_LIBDATACHANNEL
-#define ENABLE_WEBRTC 1
-#endif
-
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 

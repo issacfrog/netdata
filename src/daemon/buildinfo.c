@@ -62,7 +62,6 @@ typedef enum __attribute__((packed)) {
     BIB_DB_NONE,
     BIB_CONNECTIVITY_ACLK,
     BIB_CONNECTIVITY_HTTPD_STATIC,
-    BIB_CONNECTIVITY_WEBRTC,
     BIB_CONNECTIVITY_NATIVE_HTTPS,
     BIB_CONNECTIVITY_TLS_HOST_VERIFY,
     BIB_LIB_LZ4,
@@ -71,7 +70,6 @@ typedef enum __attribute__((packed)) {
     BIB_LIB_BROTLI,
     BIB_LIB_PROTOBUF,
     BIB_LIB_OPENSSL,
-    BIB_LIB_LIBDATACHANNEL,
     BIB_LIB_JSONC,
     BIB_LIB_LIBCAP,
     BIB_LIB_LIBCRYPTO,
@@ -599,14 +597,6 @@ static struct {
                 .json = "static",
                 .value = NULL,
         },
-        [BIB_CONNECTIVITY_WEBRTC] = {
-                .category = BIC_CONNECTIVITY,
-                .type = BIT_BOOLEAN,
-                .analytics = NULL,
-                .print = "WebRTC (experimental)",
-                .json = "webrtc",
-                .value = NULL,
-        },
         [BIB_CONNECTIVITY_NATIVE_HTTPS] = {
                 .category = BIC_CONNECTIVITY,
                 .type = BIT_BOOLEAN,
@@ -669,14 +659,6 @@ static struct {
                 .analytics = NULL,
                 .print = "OpenSSL (cryptography)",
                 .json = "openssl",
-                .value = NULL,
-        },
-        [BIB_LIB_LIBDATACHANNEL] = {
-                .category = BIC_LIBS,
-                .type = BIT_BOOLEAN,
-                .analytics = NULL,
-                .print = "libdatachannel (stand-alone WebRTC data channels)",
-                .json = "libdatachannel",
                 .value = NULL,
         },
         [BIB_LIB_JSONC] = {
@@ -1238,9 +1220,6 @@ __attribute__((constructor)) void initialize_build_info(void) {
     build_info_set_status(BIB_DB_NONE, true);
 
     build_info_set_status(BIB_CONNECTIVITY_HTTPD_STATIC, true);
-#ifdef ENABLE_WEBRTC
-    build_info_set_status(BIB_CONNECTIVITY_WEBRTC, true);
-#endif
     build_info_set_status(BIB_CONNECTIVITY_NATIVE_HTTPS, true);
 #if defined(HAVE_X509_VERIFY_PARAM_set1_host) && HAVE_X509_VERIFY_PARAM_set1_host == 1
     build_info_set_status(BIB_CONNECTIVITY_TLS_HOST_VERIFY, true);
@@ -1272,9 +1251,6 @@ __attribute__((constructor)) void initialize_build_info(void) {
 #endif
 #endif
 
-#ifdef HAVE_LIBDATACHANNEL
-    build_info_set_status(BIB_LIB_LIBDATACHANNEL, true);
-#endif
     build_info_set_status(BIB_LIB_OPENSSL, true);
 #ifdef ENABLE_JSONC
     build_info_set_status(BIB_LIB_JSONC, true);

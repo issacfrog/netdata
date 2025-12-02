@@ -446,8 +446,6 @@ int progress_function_result(BUFFER *wb, const char *hostname) {
         if(!buffer_strlen(qp->client)) {
             if(qp->acl & HTTP_ACL_ACLK)
                 buffer_json_add_array_item_string(wb, "ACLK");
-            else if(qp->acl & HTTP_ACL_WEBRTC)
-                buffer_json_add_array_item_string(wb, "WEBRTC");
             else
                 buffer_json_add_array_item_string(wb, "unknown");
         }
@@ -629,7 +627,7 @@ int progress_unittest(void) {
     for(size_t n = 0; n < 5000000 ;n++) {
         nd_uuid_t t;
         uuid_generate_random(t);
-        query_progress_start_or_update(&t, 0, HTTP_REQUEST_MODE_OPTIONS, HTTP_ACL_WEBRTC, "ephemeral", NULL, "test");
+        query_progress_start_or_update(&t, 0, HTTP_REQUEST_MODE_OPTIONS, HTTP_ACL_ACLK, "ephemeral", NULL, "test");
         query_progress_finished(&t, 0, 200, 1234, 123, 12);
 
         QUERY_PROGRESS *qp;

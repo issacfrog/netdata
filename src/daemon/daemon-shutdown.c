@@ -201,9 +201,6 @@ static void netdata_cleanup_and_exit(EXIT_REASON reason, bool abnormal, bool exi
     }
 #endif
 
-    webrtc_close_all_connections();
-    watcher_step_complete(WATCHER_STEP_ID_CLOSE_WEBRTC_CONNECTIONS);
-
     service_signal_exit(ABILITY_WEB_REQUESTS | SERVICE_ACLK | ABILITY_STREAMING_CONNECTIONS | SERVICE_SYSTEMD);
 
     service_signal_exit(SERVICE_EXPORTERS | SERVICE_HEALTH | SERVICE_WEB_SERVER | SERVICE_HTTPD);

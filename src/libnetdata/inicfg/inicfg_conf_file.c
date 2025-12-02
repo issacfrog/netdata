@@ -224,7 +224,6 @@ void inicfg_generate(struct config *root, BUFFER *wb, int only_changed, bool net
             else if(!string_strcmp(sect->name, CONFIG_SECTION_ML))                pri = 8;
             else if(!string_strcmp(sect->name, CONFIG_SECTION_HEALTH))            pri = 9;
             else if(!string_strcmp(sect->name, CONFIG_SECTION_WEB))               pri = 10;
-            else if(!string_strcmp(sect->name, CONFIG_SECTION_WEBRTC))            pri = 11;
             // by default, new sections will get pri = 12 (set at the end, below)
             else if(!string_strcmp(sect->name, CONFIG_SECTION_REGISTRY))          pri = 13;
             else if(!string_strcmp(sect->name, CONFIG_SECTION_PULSE)) pri = 14;

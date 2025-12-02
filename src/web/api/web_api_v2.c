@@ -122,16 +122,6 @@ static struct web_api_command api_commands_v2[] = {
         .allow_subpaths = 0
     },
 
-    // WebRTC APIs
-    {
-        .api = "rtc_offer",
-        .hash = 0,
-        .acl = HTTP_ACL_ACLK | ACL_DEV_OPEN_ACCESS,
-        .access = HTTP_ACCESS_SIGNED_ID | HTTP_ACCESS_SAME_SPACE,
-        .callback = api_v2_webrtc,
-        .allow_subpaths = 0
-    },
-
     // management APIs
     {
         .api = "claim",

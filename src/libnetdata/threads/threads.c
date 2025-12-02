@@ -119,7 +119,7 @@ inline int nd_thread_has_tag(void) {
 }
 
 // For threads created by netdata, return the tag of the thread.
-// For threads created by others (libuv, webrtc, etc), return the tag of the operating system.
+// For threads created by others (libuv, etc), return the tag of the operating system.
 // This caches the response, so that it won't query the operating system multiple times.
 static inline const char *nd_thread_get_name(bool recheck) {
     if(nd_thread_has_tag())
@@ -169,25 +169,6 @@ void uv_thread_set_name_np(const char *name) {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-
-static size_t webrtc_id = 0;
-static __thread bool webrtc_name_set = false;
-void webrtc_set_thread_name(void) {
-    if(_nd_thread_info || webrtc_name_set) return;
-
-    webrtc_name_set = true;
-
-    char tmp[ND_THREAD_TAG_MAX + 1] = "";
-    os_get_thread_name(tmp, sizeof(tmp));
-
-    if(!tmp[0] || strcmp(tmp, "netdata") == 0) {
-        char name[ND_THREAD_TAG_MAX + 1];
-        snprintfz(name, ND_THREAD_TAG_MAX, "WEBRTC[%zu]", __atomic_fetch_add(&webrtc_id, 1, __ATOMIC_RELAXED));
-        os_set_thread_name(name);
-    }
-
-    nd_thread_get_name(true);
-}
 
 // --------------------------------------------------------------------------------------------------------------------
 // locks tracking

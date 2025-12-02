@@ -47,7 +47,6 @@ typedef enum __attribute__((packed)) {
     WEB_CLIENT_FLAG_CONN_TCP                = (1 << 11), // the client is using a TCP socket
     WEB_CLIENT_FLAG_CONN_UNIX               = (1 << 12), // the client is using a UNIX socket
     WEB_CLIENT_FLAG_CONN_CLOUD              = (1 << 13), // the client is using Netdata Cloud
-    WEB_CLIENT_FLAG_CONN_WEBRTC             = (1 << 14), // the client is using WebRTC
 
     // streaming and websocket
     WEB_CLIENT_FLAG_DONT_CLOSE_SOCKET       = (1 << 15), // don't close the socket when cleaning up
@@ -117,8 +116,7 @@ typedef enum __attribute__((packed)) {
 #define web_client_check_conn_unix(w) web_client_flag_check(w, WEB_CLIENT_FLAG_CONN_UNIX)
 #define web_client_check_conn_tcp(w) web_client_flag_check(w, WEB_CLIENT_FLAG_CONN_TCP)
 #define web_client_check_conn_cloud(w) web_client_flag_check(w, WEB_CLIENT_FLAG_CONN_CLOUD)
-#define web_client_check_conn_webrtc(w) web_client_flag_check(w, WEB_CLIENT_FLAG_CONN_WEBRTC)
-#define web_client_flags_clear_conn(w) web_client_flag_clear(w, WEB_CLIENT_FLAG_CONN_TCP | WEB_CLIENT_FLAG_CONN_UNIX | WEB_CLIENT_FLAG_CONN_CLOUD | WEB_CLIENT_FLAG_CONN_WEBRTC)
+#define web_client_flags_clear_conn(w) web_client_flag_clear(w, WEB_CLIENT_FLAG_CONN_TCP | WEB_CLIENT_FLAG_CONN_UNIX | WEB_CLIENT_FLAG_CONN_CLOUD)
 
 #define web_client_is_websocket(w) web_client_flag_check(w, WEB_CLIENT_FLAG_WEBSOCKET_CLIENT)
 #define web_client_set_websocket(w) web_client_flag_set(w, WEB_CLIENT_FLAG_WEBSOCKET_CLIENT)
@@ -134,7 +132,6 @@ void web_client_set_permissions(struct web_client *w, HTTP_ACCESS access, HTTP_U
 void web_client_set_conn_tcp(struct web_client *w);
 void web_client_set_conn_unix(struct web_client *w);
 void web_client_set_conn_cloud(struct web_client *w);
-void web_client_set_conn_webrtc(struct web_client *w);
 
 #define NETDATA_WEB_REQUEST_URL_SIZE 65536              // static allocation
 

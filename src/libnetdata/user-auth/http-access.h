@@ -90,7 +90,6 @@ typedef enum __attribute__((packed)) {
     HTTP_ACL_API_UDP                = (1 << 2), // from the internal web server (UDP port)
     HTTP_ACL_API_UNIX               = (1 << 3), // from the internal web server (UNIX socket)
     HTTP_ACL_ACLK                   = (1 << 5), // from ACLK
-    HTTP_ACL_WEBRTC                 = (1 << 6), // from WebRTC
 
     // HTTP_ACL_API takes the following additional ACLs, based on pattern matching of the client IP
     HTTP_ACL_METRICS                = (1 << 10),
@@ -123,12 +122,10 @@ typedef enum __attribute__((packed)) {
     | HTTP_ACL_API_UDP                                                  \
     | HTTP_ACL_API_UNIX                                                 \
     | HTTP_ACL_ACLK                                                     \
-    | HTTP_ACL_WEBRTC                                                   \
 )
 
 #define HTTP_ACL_TRANSPORTS_WITHOUT_CLIENT_IP_VALIDATION (HTTP_ACL)(    \
       HTTP_ACL_ACLK                                                     \
-    | HTTP_ACL_WEBRTC                                                   \
 )
 
 #define HTTP_ACL_ALL_FEATURES (HTTP_ACL)(                               \

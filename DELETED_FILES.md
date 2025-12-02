@@ -177,6 +177,119 @@ macOS launchd服务配置目录，包含以下文件：
 
 ---
 
+# WebRTC相关文件删除清单
+
+## 删除的目录
+
+### 1. src/web/rtc/ (整个目录)
+WebRTC实现目录，包含以下文件：
+- webrtc.c - WebRTC核心实现
+- webrtc.h - WebRTC头文件
+- README.md - WebRTC说明文档
+
+## 删除的单独文件
+
+### API实现文件
+1. `src/web/api/v2/api_v2_webrtc.c` - WebRTC API v2实现
+
+### CMake构建配置
+2. `CMakeLists.txt` - 删除了以下内容：
+   - 第165-166行：`ENABLE_WEBRTC` 选项定义
+   - 第295-314行：libdatachannel库的FetchContent配置
+   - 第1250行：`api_v2_webrtc.c` 源文件引用
+   - 第1322-1323行：`webrtc.c` 和 `webrtc.h` 源文件引用
+   - 第2740行：`LibDataChannel::LibDataChannelStatic` 链接库
+
+### 配置文件
+3. `packaging/cmake/config.cmake.h.in` - 删除了 `HAVE_LIBDATACHANNEL` 宏定义
+
+## 修改的源文件
+
+### API路由文件
+1. **src/web/api/v2/api_v2_calls.h** - 删除了 `api_v2_webrtc()` 函数声明
+2. **src/web/api/web_api_v2.c** - 删除了 `/api/v2/rtc_offer` API路由定义
+3. **src/web/api/web_api_v3.c** - 删除了 `/api/v3/rtc_offer` API路由定义
+
+### Web客户端文件
+4. **src/web/server/web_client.h** - 删除了：
+   - `WEB_CLIENT_FLAG_CONN_WEBRTC` 标志位
+   - `web_client_check_conn_webrtc()` 宏定义
+   - `web_client_set_conn_webrtc()` 函数声明
+   - 从 `web_client_flags_clear_conn()` 中移除了 `WEB_CLIENT_FLAG_CONN_WEBRTC`
+   - 从 `HTTP_ACL_TRANSPORTS` 和 `HTTP_ACL_TRANSPORTS_WITHOUT_CLIENT_IP_VALIDATION` 中移除了 `HTTP_ACL_WEBRTC`
+
+5. **src/web/server/web_client.c** - 删除了 `web_client_set_conn_webrtc()` 函数实现
+
+### 守护进程文件
+6. **src/daemon/main.c** - 删除了 `webrtc_initialize()` 调用（第1144-1147行）
+
+7. **src/daemon/daemon-shutdown.c** - 删除了：
+   - `webrtc_close_all_connections()` 调用
+   - `watcher_step_complete(WATCHER_STEP_ID_CLOSE_WEBRTC_CONNECTIONS)` 调用
+
+8. **src/daemon/daemon-shutdown-watcher.h** - 删除了 `WATCHER_STEP_ID_CLOSE_WEBRTC_CONNECTIONS` 枚举值
+
+9. **src/daemon/daemon-shutdown-watcher.c** - 删除了：
+   - `WATCHER_STEP_ID_CLOSE_WEBRTC_CONNECTIONS` 步骤等待
+   - 对应的步骤消息定义
+
+10. **src/daemon/common.h** - 删除了 `#include "web/rtc/webrtc.h"`
+
+11. **src/daemon/buildinfo.c** - 删除了：
+   - `BIB_CONNECTIVITY_WEBRTC` 枚举值
+   - `BIB_LIB_LIBDATACHANNEL` 枚举值
+   - 对应的构建信息数组项
+   - `ENABLE_WEBRTC` 和 `HAVE_LIBDATACHANNEL` 条件编译代码
+
+### 库文件
+12. **src/libnetdata/common.h** - 删除了 `HAVE_LIBDATACHANNEL` 到 `ENABLE_WEBRTC` 的宏定义
+
+13. **src/libnetdata/inicfg/inicfg.h** - 删除了 `CONFIG_SECTION_WEBRTC` 配置节定义
+
+14. **src/libnetdata/inicfg/inicfg_conf_file.c** - 删除了 WebRTC 配置节的优先级设置
+
+15. **src/libnetdata/query_progress/progress.c** - 删除了：
+   - `HTTP_ACL_WEBRTC` 相关的查询进度处理
+   - 测试代码中的 `HTTP_ACL_WEBRTC` 引用
+
+16. **src/libnetdata/threads/threads.h** - 删除了 `webrtc_set_thread_name()` 函数声明
+
+17. **src/libnetdata/threads/threads.c** - 删除了：
+   - `webrtc_set_thread_name()` 函数实现
+   - 相关的静态变量和线程命名逻辑
+   - 注释中的 "webrtc" 引用
+
+18. **src/libnetdata/user-auth/http-access.h** - 删除了：
+   - `HTTP_ACL_WEBRTC` ACL标志位
+   - 从 `HTTP_ACL_TRANSPORTS` 宏中移除了 `HTTP_ACL_WEBRTC`
+   - 从 `HTTP_ACL_TRANSPORTS_WITHOUT_CLIENT_IP_VALIDATION` 宏中移除了 `HTTP_ACL_WEBRTC`
+
+### API文档文件
+19. **src/web/api/netdata-swagger.yaml** - 删除了 `/api/v2/rtc_offer` 和 `/api/v3/rtc_offer` API端点定义
+
+20. **src/web/api/netdata-swagger.json** - 删除了 WebRTC 相关的API端点定义（通过JSON操作）
+
+## WebRTC删除统计信息
+
+- **删除的目录数**: 1个
+- **删除的单独文件数**: 1个
+- **修改的源文件数**: 20个
+- **src/web/rtc/目录中的文件数**: 3个
+- **总计删除的文件数**: 约4个文件
+- **总计修改的文件数**: 20个文件
+
+## 说明
+
+WebRTC功能用于在Netdata Agent和客户端之间建立点对点数据通道连接，实现低延迟的实时指标传输。该功能是实验性的，默认未启用，需要libdatachannel库支持。
+
+由于项目不需要此功能，所有相关代码、配置和API端点已从代码库中删除。删除的内容包括：
+- WebRTC核心实现代码
+- WebRTC API端点（/api/v2/rtc_offer 和 /api/v3/rtc_offer）
+- libdatachannel库的构建配置
+- 所有相关的条件编译和运行时检查代码
+
+---
+
 # IBM插件相关文件删除清单
 
 ## 删除的目录

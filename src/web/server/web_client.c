@@ -28,11 +28,6 @@ void web_client_set_conn_cloud(struct web_client *w) {
     web_client_flag_set(w, WEB_CLIENT_FLAG_CONN_CLOUD);
 }
 
-void web_client_set_conn_webrtc(struct web_client *w) {
-    web_client_flags_clear_conn(w);
-    web_client_flag_set(w, WEB_CLIENT_FLAG_CONN_WEBRTC);
-}
-
 void web_client_reset_permissions(struct web_client *w) {
     w->user_auth.method = USER_AUTH_METHOD_NONE;
     w->user_auth.access = HTTP_ACCESS_NONE;

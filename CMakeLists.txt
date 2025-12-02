@@ -156,14 +156,10 @@ cmake_dependent_option(ENABLE_PLUGIN_SYSTEMD_UNITS "Enable systemd units informa
 option(ENABLE_EXPORTER_PROMETHEUS_REMOTE_WRITE "Enable exporting to Prometheus via remote write API" ${DEFAULT_FEATURE_STATE})
 option(ENABLE_EXPORTER_MONGODB "Enable exporting to MongoDB" ${DEFAULT_FEATURE_STATE})
 
-# Vendoring
+# Vendoring 依赖项选择
 option(ENABLE_BUNDLED_JSONC "Force use of a vendored copy of JSON-C" False)
 option(ENABLE_BUNDLED_YAML "Force use of a vendored copy of libyaml" False)
 option(ENABLE_BUNDLED_PROTOBUF "Use a vendored copy of protobuf" False)
-
-# Experimental features
-option(ENABLE_WEBRTC "Enable WebRTC dashboard communications (experimental)" False)
-mark_as_advanced(ENABLE_WEBRTC)
 
 # Other optional functionality
 option(ENABLE_SENTRY "Build with Sentry Native crash reporting" False)
@@ -290,27 +286,6 @@ if(ENABLE_PLUGIN_GO)
     set(NEED_NDSUDO TRUE)
 else()
     set(NEED_NDSUDO FALSE)
-endif()
-
-if(ENABLE_WEBRTC)
-        include(FetchContent)
-        include(NetdataFetchContentExtra)
-
-        # ignore debhelper
-        set(FETCHCONTENT_FULLY_DISCONNECTED Off)
-
-        set(PREFER_SYSTEM_LIB True)
-        set(NO_MEDIA True)
-        set(NO_WEBSOCKET True)
-
-        set(HAVE_LIBDATACHANNEL True)
-
-        FetchContent_Declare(libdatachannel
-            GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
-            GIT_TAG v0.20.1
-            CMAKE_ARGS ${NETDATA_PROPAGATE_TOOLCHAIN_ARGS}
-        )
-        FetchContent_MakeAvailable(libdatachannel)
 endif()
 
 include(NetdataProtobuf)
@@ -1247,7 +1222,6 @@ set(API_PLUGIN_FILES
         src/web/api/v2/api_v2_alert_config.c
         src/web/api/v2/api_v2_contexts.c
         src/web/api/v2/api_v2_claim.c
-        src/web/api/v2/api_v2_webrtc.c
         src/web/api/v3/api_v3_calls.h
         src/web/api/v3/api_v3_settings.c
         src/web/api/functions/functions.c
@@ -1319,8 +1293,6 @@ set(API_PLUGIN_FILES
         src/web/api/formatters/charts2json.h
         src/web/api/formatters/rrdset2json.c
         src/web/api/formatters/rrdset2json.h
-        src/web/rtc/webrtc.c
-        src/web/rtc/webrtc.h
         src/web/api/functions/function-bearer_get_token.c
         src/web/api/functions/function-bearer_get_token.h
         src/web/api/v3/api_v3_me.c
@@ -2737,7 +2709,6 @@ target_link_libraries(netdata PRIVATE
         "$<$<BOOL:${ENABLE_EXPORTER_MONGODB}>:${MONGOC_LIBRARIES}>"
         "$<$<BOOL:${ENABLE_EXPORTER_PROMETHEUS_REMOTE_WRITE}>:${SNAPPY_LIBRARIES}>"
         "$<$<BOOL:${ENABLE_SENTRY}>:sentry>"
-        "$<$<BOOL:${ENABLE_WEBRTC}>:LibDataChannel::LibDataChannelStatic>"
         "$<$<BOOL:${CURL_FOUND}>:PkgConfig::CURL>"
 )
 

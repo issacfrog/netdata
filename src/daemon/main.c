@@ -1140,13 +1140,6 @@ int netdata_main(int argc, char **argv) {
     }
 
     // ----------------------------------------------------------------------------------------------------------------
-
-#ifdef HAVE_LIBDATACHANNEL
-    delta_startup_time("webrtc");
-    webrtc_initialize();
-#endif
-
-    // ----------------------------------------------------------------------------------------------------------------
     delta_startup_time("mrg cleanup");
 
 #ifdef ENABLE_DBENGINE

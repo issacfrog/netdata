@@ -52,7 +52,6 @@
 #cmakedefine HAVE_PROTOBUF
 #cmakedefine BUNDLED_PROTOBUF
 #cmakedefine HAVE_MONGOC
-#cmakedefine HAVE_LIBDATACHANNEL
 
 // checked symbols
 

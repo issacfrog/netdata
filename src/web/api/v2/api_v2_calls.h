@@ -26,8 +26,6 @@ int api_v2_node_instances(RRDHOST *host, struct web_client *w, char *url);
 int api_v2_claim(RRDHOST *host, struct web_client *w, char *url);
 int api_v3_claim(RRDHOST *host, struct web_client *w, char *url);
 
-int api_v2_webrtc(RRDHOST *host, struct web_client *w, char *url);
-
 int api_v2_progress(RRDHOST *host, struct web_client *w, char *url);
 
 int api_v2_bearer_get_token(RRDHOST *host, struct web_client *w, char *url);
