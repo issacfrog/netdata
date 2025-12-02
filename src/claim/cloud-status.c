@@ -17,7 +17,7 @@ ENUM_STR_DEFINE_FUNCTIONS(CLOUD_STATUS, CLOUD_STATUS_AVAILABLE, "available");
 CLOUD_STATUS cloud_status(void) {
     if(unlikely(aclk_disable_runtime))
         return CLOUD_STATUS_BANNED;
-
+    
     if(likely(aclk_online()))
         return CLOUD_STATUS_ONLINE;
 
